@@ -350,7 +350,7 @@
             // Проверка пароля администратора (4805)
             submitAdminPassword.addEventListener('click', () => {
                 if (adminPasswordInput.value === '4805') {
-                    state.coins += 10000;
+                    state.coins += 100000;
                     
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
