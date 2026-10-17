@@ -374,7 +374,108 @@
                 saveGame();
                 updateUI();
             });
+// Играть сначала
+            restartGameBtn.addEventListener('click', () => {
+                localStorage.removeItem('clicker_save_v2');
+                state = { ...initialState };
+                gameWon = false;
+                winModal.style.display = 'none';
+                renderButtons();
+                saveGame();
+                updateUI();
+            });
 
+            function saveGame() {
+                localStorage.setItem('clicker_save_v2', JSON.stringify(state));
+            }
+
+            function loadGame() {
+                const saved = localStorage.getItem('clicker_save_v2');
+                if (saved) {
+                    try {
+                        state = Object.assign(state, JSON.parse(saved));
+                    } catch (e) {
+                        console.error("Ошибка сохранения:", e);
+                    }
+                }
+                renderButtons();
+                updateUI();
+                checkWinCondition();
+            }
+
+            function renderButtons() {
+                clickArea.innerHTML = '';
+                for (let i = 0; i < state.buttonsCount; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'tap-button';
+                    btn.innerText = 'ТАПАЙ!';
+                    btn.addEventListener('click', (e) => handleTap(e));
+                    clickArea.appendChild(btn);
+                }
+            }
+
+            function handleTap(e) {
+                const earnedCoins = state.clickPower * state.buttonsCount;
+                state.coins += earnedCoins;
+                
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+
+                const allButtons = document.querySelectorAll('.tap-button');
+                allButtons.forEach(btn => {
+                    btn.classList.add('active-tap');
+                    setTimeout(() => btn.classList.remove('active-tap'), 100);
+                });
+
+                showFloatingNumber(e.clientX, e.clientY, `+${earnedCoins}`);
+                
+                saveGame();
+                updateUI();
+                checkWinCondition();
+            }
+
+            function showFloatingNumber(x, y, text) {
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = text;
+                
+                const rect = clickArea.getBoundingClientRect();
+                el.style.left = `${x - rect.left - 10}px`;
+                el.style.top = `${y - rect.top - 20}px`;
+
+                clickArea.appendChild(el);
+
+                setTimeout(() => {
+                    el.remove();
+                }, 800);
+            }
+
+            // Проверка победы
+            function checkWinCondition() {
+                if (state.coins >= WIN_TARGET && !gameWon) {
+                    gameWon = true;
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                    createConfetti();
+                    winModal.style.display = 'flex';
+                }
+            }
+
+            // Генератор салюта/конфетти
+            function createConfetti() {
+                confettiContainer.innerHTML = '';
+                const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#7928ca', '#ffffff'];
+                for (let i = 0; i < 40; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                    confettiContainer.appendChild(confetti);
+                }
             function saveGame() {
                 localStorage.setItem('clicker_save_v2', JSON.stringify(state));
             }
