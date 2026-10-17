@@ -372,7 +372,7 @@
                 tg.expand();
             }
 
-            const WIN_TARGET = 1000000;
+            const WIN_TARGET = 10000000;
             let gameWon = false;
 
             const initialState = {
@@ -425,11 +425,11 @@
             // Проверка админ-пароля
             submitAdminPassword.addEventListener('click', () => {
                 if (adminPasswordInput.value === '0000') {
-                    state.coins += 100000;
+                    state.coins += 1000000;
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
                     }
-                    alert('Красава! Вам начислено 100 000 монет.');
+                    alert('Красава! Вам начислено 1 000 000 монет.');
                     adminModal.style.display = 'none';
                 } else {
                     // Списываем все монеты при ошибочном пароле
