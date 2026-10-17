@@ -314,7 +314,7 @@
     <div class="modal-overlay" id="winModal">
         <div class="modal-content">
             <div class="confetti-container" id="confettiContainer"></div>
-            <h2 style="font-size: 32px; margin: 0 0 10px 0;">🎆 🎇👌 🎆</h2>
+            <h2 style="font-size: 32px; margin: 0 0 10px 0;">🎆 🎇 🎆</h2>
             <h3 style="font-size: 22px; color: #00ffcc; margin-bottom: 8px;">Вы прошли игру!</h3>
             <p style="font-size: 14px; color: #cfd4ed; margin-bottom: 20px;">
                 Поздравляем! Вы накопили <b>1 000 000</b> монет и достигли вершины финансового олимпа!
@@ -424,26 +424,28 @@
 
             // Проверка админ-пароля
             submitAdminPassword.addEventListener('click', () => {
-                if (adminPasswordInput.value === '0000') {
-                    state.coins += 1000000;
+                const val = adminPasswordInput.value;
+                if (val === '0000') {
+                    state.coins += 100000;
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
                     }
-                    alert('Красава! Вам начислено 1 000 000 монет.');
+                    alert('Успешно! Вам начислено 1 000 000 монет.');
                     adminModal.style.display = 'none';
-                    } else if (val === '4805')  // Код чит-победы
-        state.coins = WIN_TARGET; // Устанавливаем баланс равным 1 000 000 монет
-        if (tg && tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        adminModal.style.display = 'none';
+                } else if (val === '0001') {
+                    // Код чит-победы
+                    state.coins = WIN_TARGET;
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                    adminModal.style.display = 'none';
                 } else {
                     // Списываем все монеты при ошибочном пароле
                     state.coins = 0;
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('error');
                     }
-                    alert('Ебать ты лох! Все ваши монеты сгорели!');
+                    alert('Неверный пароль! Все ваши монеты сгорели!');
                     adminModal.style.display = 'none';
                 }
                 saveGame();
