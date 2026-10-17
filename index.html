@@ -167,9 +167,7 @@
     </div>
 
     <!-- Область с кнопками -->
-    <div class="click-area" id="clickArea">
-        <!-- Кнопки генерируются динамически -->
-    </div>
+    <div class="click-area" id="clickArea"></div>
 
     <div class="bottom-panel">
         <!-- Секция улучшений -->
@@ -200,153 +198,159 @@
     </div>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.expand();
-        }
-
-        // Состояние игры
-        let state = {
-            coins: 0,
-            clickPower: 1,
-            upgradeLevel: 0,
-            upgradeCost: 10,
-            buttonsCount: 1,
-            buttonCost: 500
-        };
-
-        // Загрузка
-        function loadGame() {
-            const saved = localStorage.getItem('clicker_save_v2');
-            if (saved) {
-                state = Object.assign(state, JSON.parse(saved));
+        document.addEventListener("DOMContentLoaded", () => {
+            const tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.expand();
             }
-            renderButtons();
-            updateUI();
-        }
 
-        // Сохранение
-        function saveGame() {
-            localStorage.setItem('clicker_save_v2', JSON.stringify(state));
-        }
+            // Состояние игры
+            let state = {
+                coins: 0,
+                clickPower: 1,
+                upgradeLevel: 0,
+                upgradeCost: 10,
+                buttonsCount: 1,
+                buttonCost: 500
+            };
 
-        const coinsEl = document.getElementById('coins');
-        const clickPowerEl = document.getElementById('click-power');
-        const buttonCountEl = document.getElementById('button-count');
-        const clickArea = document.getElementById('clickArea');
-        
-        const buyUpgradeBtn = document.getElementById('buyUpgradeBtn');
-        const upgradeLevelEl = document.getElementById('upgradeLevel');
-        const upgradeCostEl = document.getElementById('upgradeCost');
-
-        const buyButtonBtn = document.getElementById('buyButtonBtn');
-        const shopButtonLevelEl = document.getElementById('shopButtonLevel');
-        const buttonCostEl = document.getElementById('buttonCost');
-
-        // Отрисовка кнопок
-        function renderButtons() {
-            clickArea.innerHTML = '';
-            for (let i = 0; i < state.buttonsCount; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'tap-button';
-                btn.innerText = 'ТАПАЙ!';
-                btn.addEventListener('click', (e) => handleTap(e));
-                clickArea.appendChild(btn);
-            }
-        }
-
-        // Обработка тапа
-        function handleTap(e) {
-            state.coins += state.clickPower;
+            const coinsEl = document.getElementById('coins');
+            const clickPowerEl = document.getElementById('click-power');
+            const buttonCountEl = document.getElementById('button-count');
+            const clickArea = document.getElementById('clickArea');
             
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
+            const buyUpgradeBtn = document.getElementById('buyUpgradeBtn');
+            const upgradeLevelEl = document.getElementById('upgradeLevel');
+            const upgradeCostEl = document.getElementById('upgradeCost');
+
+            const buyButtonBtn = document.getElementById('buyButtonBtn');
+            const shopButtonLevelEl = document.getElementById('shopButtonLevel');
+            const buttonCostEl = document.getElementById('buttonCost');
+
+            // Сохранение
+            function saveGame() {
+                localStorage.setItem('clicker_save_v2', JSON.stringify(state));
             }
 
-            showFloatingNumber(e.clientX, e.clientY, `+${state.clickPower}`);
-            saveGame();
-            updateUI();
-        }
-
-        function showFloatingNumber(x, y, text) {
-            const el = document.createElement('div');
-            el.className = 'floating-text';
-            el.innerText = text;
-            
-            const rect = clickArea.getBoundingClientRect();
-            el.style.left = `${x - rect.left - 10}px`;
-            el.style.top = `${y - rect.top - 20}px`;
-
-            clickArea.appendChild(el);
-
-            setTimeout(() => {
-                el.remove();
-            }, 800);
-        }
-
-        // Покупка клик-улучшения
-        buyUpgradeBtn.addEventListener('click', () => {
-            if (state.coins >= state.upgradeCost) {
-                state.coins -= state.upgradeCost;
-                state.clickPower += 1;
-                state.upgradeLevel += 1;
-
-                // Экономика: базовое увеличение + каждые 3 улучшения дополнительно +1000 к цене
-                let nextCost = Math.round(state.upgradeCost * 1.8);
-                if (state.upgradeLevel % 3 === 0) {
-                    nextCost += 1000;
+            // Загрузка
+            function loadGame() {
+                const saved = localStorage.getItem('clicker_save_v2');
+                if (saved) {
+                    try {
+                        state = Object.assign(state, JSON.parse(saved));
+                    } catch (e) {
+                        console.error("Ошибка загрузки сохранения:", e);
+                    }
                 }
-                state.upgradeCost = nextCost;
-
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
-
-                saveGame();
-                updateUI();
-            }
-        });
-
-        // Покупка новой кнопки в магазине
-        buyButtonBtn.addEventListener('click', () => {
-            if (state.coins >= state.buttonCost) {
-                state.coins -= state.buttonCost;
-                state.buttonsCount += 1;
-
-                // Цена следующей кнопки
-                let nextButtonCost = Math.round(state.buttonCost * 2.5);
-                if ((state.buttonsCount - 1) % 3 === 0) {
-                    nextButtonCost += 1000;
-                }
-                state.buttonCost = nextButtonCost;
-
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
-
                 renderButtons();
+                updateUI();
+            }
+
+            // Отрисовка кнопок
+            function renderButtons() {
+                clickArea.innerHTML = '';
+                for (let i = 0; i < state.buttonsCount; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'tap-button';
+                    btn.innerText = 'ТАПАЙ!';
+                    btn.addEventListener('click', (e) => handleTap(e));
+                    clickArea.appendChild(btn);
+                }
+            }
+
+            // Обработка тапа
+            function handleTap(e) {
+                state.coins += state.clickPower;
+                
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+
+                showFloatingNumber(e.clientX, e.clientY, `+${state.clickPower}`);
                 saveGame();
                 updateUI();
             }
+
+            function showFloatingNumber(x, y, text) {
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = text;
+                
+                const rect = clickArea.getBoundingClientRect();
+                el.style.left = `${x - rect.left - 10}px`;
+                el.style.top = `${y - rect.top - 20}px`;
+
+                clickArea.appendChild(el);
+
+                setTimeout(() => {
+                    el.remove();
+                }, 800);
+            }
+
+            // Покупка клик-улучшения
+            buyUpgradeBtn.addEventListener('click', () => {
+                if (state.coins >= state.upgradeCost) {
+                    state.coins -= state.upgradeCost;
+                    state.clickPower += 1;
+                    state.upgradeLevel += 1;
+
+                    // Экономика: базовое увеличение + каждые 3 улучшения дополнительно +1000 к цене
+                    let nextCost = Math.round(state.upgradeCost * 1.8);
+                    if (state.upgradeLevel % 3 === 0) {
+                        nextCost += 1000;
+                    }
+                    state.upgradeCost = nextCost;
+
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+
+                    saveGame();
+                    updateUI();
+                }
+            });
+
+            // Покупка новой кнопки в магазине
+            buyButtonBtn.addEventListener('click', () => {
+                if (state.coins >= state.buttonCost) {
+                    state.coins -= state.buttonCost;
+                    state.buttonsCount += 1;
+
+                    // Цена следующей кнопки
+                    let nextButtonCost = Math.round(state.buttonCost * 2.5);
+                    if ((state.buttonsCount - 1) % 3 === 0) {
+                        nextButtonCost += 1000;
+                    }
+                    state.buttonCost = nextButtonCost;
+
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+
+                    renderButtons();
+                    saveGame();
+                    updateUI();
+                }
+            });
+
+            function updateUI() {
+                coinsEl.innerText = state.coins;
+                clickPowerEl.innerText = state.clickPower;
+                buttonCountEl.innerText = state.buttonsCount;
+
+                // Улучшение силы клика
+                upgradeLevelEl.innerText = state.upgradeLevel;
+                upgradeCostEl.innerText = state.upgradeCost;
+                buyUpgradeBtn.disabled = state.coins < state.upgradeCost;
+
+                // Улучшение/Магазин доп. кнопок
+                shopButtonLevelEl.innerText = state.buttonsCount - 1;
+                buttonCostEl.innerText = state.buttonCost;
+                buyButtonBtn.disabled = state.coins < state.buttonCost;
+            }
+
+            loadGame();
         });
-
-        function updateUI() {
-            coinsEl.innerText = state.coins;
-            clickPowerEl.innerText = state.clickPower;
-            buttonCountEl.innerText = state.buttonsCount;
-
-            // Улучшение силы клика
-            upgradeLevelEl.innerText = state.upgradeLevel;
-            upgradeCostEl.innerText = state.upgradeCost;
-            buyUpgradeBtn.disabled = state.coins < state.upgradeCost;
-
-            // Улучшение/Магазин доп. кнопок
-            shopButtonLevelEl.innerText = state.buttonsCount - 1;
-            buttonCostEl.innerText = state.buttonCost;
-            buyButtonBtn.disabled = state.coins < state.buttonCost;
-        }
-
-        loadGame();
     </script>
 </body>
 </html>
