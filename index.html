@@ -424,12 +424,12 @@
 
             // Проверка админ-пароля
             submitAdminPassword.addEventListener('click', () => {
-                if (adminPasswordInput.value === '4805') {
-                    state.coins += 10000;
+                if (adminPasswordInput.value === '0000') {
+                    state.coins += 100000;
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
                     }
-                    alert('Успешно! Вам начислено 10 000 монет.');
+                    alert('Красава! Вам начислено 100 000 монет.');
                     adminModal.style.display = 'none';
                 } else {
                     // Списываем все монеты при ошибочном пароле
@@ -437,7 +437,7 @@
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('error');
                     }
-                    alert('Неверный пароль! Все ваши монеты сгорели!');
+                    alert('Ебать ты лох! Все ваши монеты сгорели!');
                     adminModal.style.display = 'none';
                 }
                 saveGame();
