@@ -24,9 +24,94 @@
             justify-content: space-between;
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
+        /* Кнопка с тремя точками в верхнем правом углу */
+        .admin-menu-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+        .admin-menu-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Модальное окно админки */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: #252838;
+            padding: 24px;
+            border-radius: 16px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid #41455a;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .admin-input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #55596e;
+            background: #1f212d;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-submit {
+            background: #00ffcc;
+            color: #12131c;
+        }
+        .btn-cancel {
+            background: #55596e;
+            color: #fff;
+        }
+
         .header {
-            margin-top: 15px;
+            margin-top: 20px;
             text-align: center;
         }
         .score-container {
@@ -158,6 +243,22 @@
 </head>
 <body>
 
+    <!-- Кнопка меню (три точки) в правом верхнем углу -->
+    <button class="admin-menu-btn" id="openAdminModal">⋮</button>
+
+    <!-- Модальное окно администратора -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <h3>Строка администратора</h3>
+            <p style="font-size: 13px; color: #b3b9d1; margin-bottom: 12px;">Введите секретный пароль:</p>
+            <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Пароль">
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" id="closeAdminModal">Отмена</button>
+                <button class="modal-btn btn-submit" id="submitAdminPassword">Войти</button>
+            </div>
+        </div>
+    </div>
+
     <div class="header">
         <div class="score-container">
             🪙 <span id="coins">0</span>
@@ -205,7 +306,6 @@
                 tg.expand();
             }
 
-            // Состояние игры
             let state = {
                 coins: 0,
                 clickPower: 1,
@@ -228,6 +328,45 @@
             const buyButtonBtn = document.getElementById('buyButtonBtn');
             const shopButtonLevelEl = document.getElementById('shopButtonLevel');
             const buttonCostEl = document.getElementById('buttonCost');
+
+            // Элементы админ-панели
+            const openAdminModal = document.getElementById('openAdminModal');
+            const adminModal = document.getElementById('adminModal');
+            const closeAdminModal = document.getElementById('closeAdminModal');
+            const submitAdminPassword = document.getElementById('submitAdminPassword');
+            const adminPasswordInput = document.getElementById('adminPasswordInput');
+
+            // Открытие / закрытие модального окна админки
+            openAdminModal.addEventListener('click', () => {
+                adminModal.style.display = 'flex';
+                adminPasswordInput.value = '';
+                adminPasswordInput.focus();
+            });
+
+            closeAdminModal.addEventListener('click', () => {
+                adminModal.style.display = 'none';
+            });
+
+            // Проверка пароля администратора (4805)
+            submitAdminPassword.addEventListener('click', () => {
+                if (adminPasswordInput.value === '4805') {
+                    state.coins += 10000;
+                    
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                    
+                    alert('Успешно! Вам начислено 10 000 монет.');
+                    adminModal.style.display = 'none';
+                    saveGame();
+                    updateUI();
+                } else {
+                    if (tg && tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('error');
+                    }
+                    alert('Неверный пароль!');
+                }
+            });
 
             function saveGame() {
                 localStorage.setItem('clicker_save_v2', JSON.stringify(state));
@@ -257,7 +396,6 @@
                 }
             }
 
-            // Одновременное нажатие ВСЕХ кнопок
             function handleTap(e) {
                 const earnedCoins = state.clickPower * state.buttonsCount;
                 state.coins += earnedCoins;
@@ -266,14 +404,12 @@
                     tg.HapticFeedback.impactOccurred('light');
                 }
 
-                // Визуальная анимация нажатия НА ВСЕХ кнопках
                 const allButtons = document.querySelectorAll('.tap-button');
                 allButtons.forEach(btn => {
                     btn.classList.add('active-tap');
                     setTimeout(() => btn.classList.remove('active-tap'), 100);
                 });
 
-                // Показываем единый текст дохода над нажатой точкой
                 showFloatingNumber(e.clientX, e.clientY, `+${earnedCoins}`);
                 
                 saveGame();
@@ -296,7 +432,6 @@
                 }, 800);
             }
 
-            // Покупка клик-улучшения
             buyUpgradeBtn.addEventListener('click', () => {
                 if (state.coins >= state.upgradeCost) {
                     state.coins -= state.upgradeCost;
@@ -318,7 +453,6 @@
                 }
             });
 
-            // Покупка новой кнопки
             buyButtonBtn.addEventListener('click', () => {
                 if (state.coins >= state.buttonCost) {
                     state.coins -= state.buttonCost;
