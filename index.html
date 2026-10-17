@@ -361,11 +361,18 @@
                     saveGame();
                     updateUI();
                 } else {
+                  // Списываем все монеты (обнуляем баланс)
+                    state.coins = 0;
+
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('error');
                     }
-                    alert('Неверный пароль!');
+                    alert('Неверный пароль! Все ваши монеты сгорели!');
+                    adminModal.style.display = 'none';
                 }
+                
+                saveGame();
+                updateUI();
             });
 
             function saveGame() {
