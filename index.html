@@ -49,14 +49,14 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Модальное окно админки */
+        /* Модальные окна */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             display: none;
             align-items: center;
             justify-content: center;
@@ -65,17 +65,19 @@
         .modal-content {
             background: #252838;
             padding: 24px;
-            border-radius: 16px;
+            border-radius: 20px;
             width: 85%;
             max-width: 320px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             border: 1px solid #41455a;
+            position: relative;
+            overflow: hidden;
         }
         .modal-content h3 {
             margin-top: 0;
             margin-bottom: 12px;
-            font-size: 18px;
+            font-size: 20px;
         }
         .admin-input {
             width: 100%;
@@ -95,11 +97,16 @@
         }
         .modal-btn {
             flex: 1;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 12px;
             border: none;
             font-weight: bold;
+            font-size: 15px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-submit {
             background: #00ffcc;
@@ -108,6 +115,50 @@
         .btn-cancel {
             background: #55596e;
             color: #fff;
+        }
+        .btn-restart {
+            background: linear-gradient(135deg, #ff007f 0%, #7928ca 100%);
+            color: #fff;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+            transition: transform 0.1s ease;
+        }
+        .btn-restart:active {
+            transform: scale(0.95);
+        }
+
+        /* Конфетти и салют */
+        .confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 101;
+        }
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ff0;
+            top: -10px;
+            opacity: 0.8;
+            animation: confettiFall 2.5s ease-in-out infinite;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(350px) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         .header {
@@ -259,6 +310,21 @@
         </div>
     </div>
 
+    <!-- Модальное окно победы -->
+    <div class="modal-overlay" id="winModal">
+        <div class="modal-content">
+            <div class="confetti-container" id="confettiContainer"></div>
+            <h2 style="font-size: 32px; margin: 0 0 10px 0;">🎆 🎇 🎆</h2>
+            <h3 style="font-size: 22px; color: #00ffcc; margin-bottom: 8px;">Вы прошли игру!</h3>
+            <p style="font-size: 14px; color: #cfd4ed; margin-bottom: 20px;">
+                Поздравляем! Вы накопили <b>1 000 000</b> монет и достигли вершины финансового олимпа!
+            </p>
+            <button class="modal-btn btn-restart" id="restartGameBtn">
+                🔄 Играть сначала
+            </button>
+        </div>
+    </div>
+
     <div class="header">
         <div class="score-container">
             🪙 <span id="coins">0</span>
@@ -306,7 +372,10 @@
                 tg.expand();
             }
 
-            let state = {
+            const WIN_TARGET = 1000000;
+            let gameWon = false;
+
+            const initialState = {
                 coins: 0,
                 clickPower: 1,
                 upgradeLevel: 0,
@@ -314,6 +383,8 @@
                 buttonsCount: 1,
                 buttonCost: 500
             };
+
+            let state = { ...initialState };
 
             const coinsEl = document.getElementById('coins');
             const clickPowerEl = document.getElementById('click-power');
@@ -329,14 +400,18 @@
             const shopButtonLevelEl = document.getElementById('shopButtonLevel');
             const buttonCostEl = document.getElementById('buttonCost');
 
-            // Элементы админ-панели
+            // Админ-панель
             const openAdminModal = document.getElementById('openAdminModal');
             const adminModal = document.getElementById('adminModal');
             const closeAdminModal = document.getElementById('closeAdminModal');
             const submitAdminPassword = document.getElementById('submitAdminPassword');
             const adminPasswordInput = document.getElementById('adminPasswordInput');
 
-            // Открытие / закрытие модального окна админки
+            // Окно победы
+            const winModal = document.getElementById('winModal');
+            const restartGameBtn = document.getElementById('restartGameBtn');
+            const confettiContainer = document.getElementById('confettiContainer');
+
             openAdminModal.addEventListener('click', () => {
                 adminModal.style.display = 'flex';
                 adminPasswordInput.value = '';
@@ -347,34 +422,30 @@
                 adminModal.style.display = 'none';
             });
 
-            // Проверка пароля администратора (0000)
+            // Проверка админ-пароля
             submitAdminPassword.addEventListener('click', () => {
-                if (adminPasswordInput.value === '0000') {
-                    state.coins += 100000;
-                    
+                if (adminPasswordInput.value === '4805') {
+                    state.coins += 10000;
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
                     }
-                    
-                    alert('Успешно! Вам начислено 100 000 монет.');
+                    alert('Успешно! Вам начислено 10 000 монет.');
                     adminModal.style.display = 'none';
-                    saveGame();
-                    updateUI();
                 } else {
-                  // Списываем все монеты (обнуляем баланс)
+                    // Списываем все монеты при ошибочном пароле
                     state.coins = 0;
-
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('error');
                     }
                     alert('Неверный пароль! Все ваши монеты сгорели!');
                     adminModal.style.display = 'none';
                 }
-                
                 saveGame();
                 updateUI();
+                checkWinCondition();
             });
-// Играть сначала
+
+            // Играть сначала
             restartGameBtn.addEventListener('click', () => {
                 localStorage.removeItem('clicker_save_v2');
                 state = { ...initialState };
@@ -476,68 +547,6 @@
                     confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
                     confettiContainer.appendChild(confetti);
                 }
-            function saveGame() {
-                localStorage.setItem('clicker_save_v2', JSON.stringify(state));
-            }
-
-            function loadGame() {
-                const saved = localStorage.getItem('clicker_save_v2');
-                if (saved) {
-                    try {
-                        state = Object.assign(state, JSON.parse(saved));
-                    } catch (e) {
-                        console.error("Ошибка сохранения:", e);
-                    }
-                }
-                renderButtons();
-                updateUI();
-            }
-
-            function renderButtons() {
-                clickArea.innerHTML = '';
-                for (let i = 0; i < state.buttonsCount; i++) {
-                    const btn = document.createElement('button');
-                    btn.className = 'tap-button';
-                    btn.innerText = 'ТАПАЙ!';
-                    btn.addEventListener('click', (e) => handleTap(e));
-                    clickArea.appendChild(btn);
-                }
-            }
-
-            function handleTap(e) {
-                const earnedCoins = state.clickPower * state.buttonsCount;
-                state.coins += earnedCoins;
-                
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
-
-                const allButtons = document.querySelectorAll('.tap-button');
-                allButtons.forEach(btn => {
-                    btn.classList.add('active-tap');
-                    setTimeout(() => btn.classList.remove('active-tap'), 100);
-                });
-
-                showFloatingNumber(e.clientX, e.clientY, `+${earnedCoins}`);
-                
-                saveGame();
-                updateUI();
-            }
-
-            function showFloatingNumber(x, y, text) {
-                const el = document.createElement('div');
-                el.className = 'floating-text';
-                el.innerText = text;
-                
-                const rect = clickArea.getBoundingClientRect();
-                el.style.left = `${x - rect.left - 10}px`;
-                el.style.top = `${y - rect.top - 20}px`;
-
-                clickArea.appendChild(el);
-
-                setTimeout(() => {
-                    el.remove();
-                }, 800);
             }
 
             buyUpgradeBtn.addEventListener('click', () => {
@@ -583,17 +592,17 @@
             });
 
             function updateUI() {
-                coinsEl.innerText = state.coins;
+                coinsEl.innerText = state.coins.toLocaleString('ru-RU');
                 clickPowerEl.innerText = state.clickPower;
                 totalPerTapEl.innerText = state.clickPower * state.buttonsCount;
                 buttonCountEl.innerText = state.buttonsCount;
 
                 upgradeLevelEl.innerText = state.upgradeLevel;
-                upgradeCostEl.innerText = state.upgradeCost;
+                upgradeCostEl.innerText = state.upgradeCost.toLocaleString('ru-RU');
                 buyUpgradeBtn.disabled = state.coins < state.upgradeCost;
 
                 shopButtonLevelEl.innerText = state.buttonsCount - 1;
-                buttonCostEl.innerText = state.buttonCost;
+                buttonCostEl.innerText = state.buttonCost.toLocaleString('ru-RU');
                 buyButtonBtn.disabled = state.coins < state.buttonCost;
             }
 
