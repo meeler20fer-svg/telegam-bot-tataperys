@@ -15,44 +15,53 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #12131C;
+            background: linear-gradient(135deg, #2a2d3d 0%, #1f212d 100%);
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
         .header {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
         }
         .score-container {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .stats-info {
+            font-size: 14px;
+            color: #cfd4ed;
+            margin-top: 4px;
         }
         .click-area {
             display: flex;
             justify-content: center;
             align-items: center;
+            gap: 15px;
             position: relative;
             width: 100%;
+            padding: 20px 0;
+            flex-wrap: wrap;
         }
         .tap-button {
-            width: 200px;
-            height: 200px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             background: radial-gradient(circle, #ff007f 0%, #7928ca 100%);
-            border: 6px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 30px rgba(255, 0, 127, 0.5);
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.5);
             color: #fff;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             outline: none;
@@ -63,15 +72,16 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         .tap-button:active {
-            transform: scale(0.92);
+            transform: scale(0.90);
         }
         .floating-text {
             position: absolute;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             color: #00ffcc;
             pointer-events: none;
             animation: floatUp 0.8s ease-out forwards;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
         @keyframes floatUp {
             0% {
@@ -83,47 +93,64 @@
                 transform: translateY(-80px) scale(1.2);
             }
         }
-        .upgrades-container {
+        .bottom-panel {
             width: 100%;
-            background: #1a1c29;
+            background: #34384a;
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+            padding: 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+            max-height: 45vh;
+            overflow-y: auto;
         }
-        .upgrade-card {
+        .section-title {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 18px;
+            color: #ffffff;
+            border-bottom: 2px solid #45495e;
+            padding-bottom: 6px;
+        }
+        .card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #252838;
+            background: #41455a;
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 10px;
         }
-        .upgrade-info {
+        .card-info {
             display: flex;
             flex-direction: column;
+            gap: 3px;
         }
-        .upgrade-title {
+        .card-title {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
         }
-        .upgrade-desc {
+        .card-level {
             font-size: 12px;
-            color: #a0a0a0;
+            color: #00ffcc;
+            font-weight: 600;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #b3b9d1;
         }
         .buy-btn {
             background: #0088cc;
             border: none;
             color: white;
-            padding: 10px 16px;
+            padding: 10px 14px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
         .buy-btn:disabled {
-            background: #444;
-            color: #888;
+            background: #55596e;
+            color: #8e94a8;
             cursor: not-allowed;
         }
     </style>
@@ -134,105 +161,113 @@
         <div class="score-container">
             🪙 <span id="coins">0</span>
         </div>
-        <div style="font-size: 14px; color: #a0a0a0; margin-top: 5px;">
-            Сила клика: +<span id="click-power">1</span>
+        <div class="stats-info">
+            Сила клика: +<span id="click-power">1</span> | Кнопок: <span id="button-count">1</span>
         </div>
     </div>
 
+    <!-- Область с кнопками -->
     <div class="click-area" id="clickArea">
-        <button class="tap-button" id="tapBtn">ТАПАЙ!</button>
+        <!-- Кнопки генерируются динамически -->
     </div>
 
-    <div class="upgrades-container">
-        <h3 style="margin-top: 0; margin-bottom: 12px;">Улучшения</h3>
-        
-        <div class="upgrade-card">
-            <div class="upgrade-info">
-                <span class="upgrade-title" id="upgradeName">Медная кнопка</span>
-                <span class="upgrade-desc">+1 монета за клик</span>
+    <div class="bottom-panel">
+        <!-- Секция улучшений -->
+        <h3 class="section-title">Улучшения</h3>
+        <div class="card">
+            <div class="card-info">
+                <span class="card-title">Увеличение силы клика</span>
+                <span class="card-level">Уровень: <span id="upgradeLevel">0</span></span>
+                <span class="card-desc">+1 к монетам за каждый клик</span>
             </div>
             <button class="buy-btn" id="buyUpgradeBtn">
                 <span id="upgradeCost">10</span> 🪙
             </button>
         </div>
+
+        <!-- Секция Магазина -->
+        <h3 class="section-title" style="margin-top: 15px;">Магазин</h3>
+        <div class="card">
+            <div class="card-info">
+                <span class="card-title">Дополнительная кнопка</span>
+                <span class="card-level">Уровень (Куплено): <span id="shopButtonLevel">0</span></span>
+                <span class="card-desc">Позволяет нажимать кнопки одновременно</span>
+            </div>
+            <button class="buy-btn" id="buyButtonBtn">
+                <span id="buttonCost">500</span> 🪙
+            </button>
+        </div>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.expand(); // Разворачиваем на весь экран
+            tg.expand();
         }
 
-        // Данные игры
+        // Состояние игры
         let state = {
             coins: 0,
             clickPower: 1,
             upgradeLevel: 0,
-            upgradeCost: 10
+            upgradeCost: 10,
+            buttonsCount: 1,
+            buttonCost: 500
         };
 
-        const buttonsConfig = [
-            { name: "Медная кнопка", power: 1, color: "radial-gradient(circle, #d4af37 0%, #8a5a00 100%)" },
-            { name: "Серебряная кнопка", power: 3, color: "radial-gradient(circle, #e0e0e0 0%, #757575 100%)" },
-            { name: "Золотая кнопка", power: 5, color: "radial-gradient(circle, #ffd700 0%, #ff8c00 100%)" },
-            { name: "Неоновая кнопка", power: 10, color: "radial-gradient(circle, #00f2fe 0%, #4facfe 100%)" },
-            { name: "Алмазная кнопка", power: 25, color: "radial-gradient(circle, #a8ff78 0%, #78ffd6 100%)" }
-        ];
-
-        // Загрузка сохраненного прогресса
+        // Загрузка
         function loadGame() {
-            const saved = localStorage.getItem('clicker_save');
+            const saved = localStorage.getItem('clicker_save_v2');
             if (saved) {
-                state = JSON.parse(saved);
+                state = Object.assign(state, JSON.parse(saved));
             }
+            renderButtons();
             updateUI();
         }
 
-        // Сохранение прогресса
+        // Сохранение
         function saveGame() {
-            localStorage.setItem('clicker_save', JSON.stringify(state));
+            localStorage.setItem('clicker_save_v2', JSON.stringify(state));
         }
 
-        // Элементы интерфейса
         const coinsEl = document.getElementById('coins');
         const clickPowerEl = document.getElementById('click-power');
-        const tapBtn = document.getElementById('tapBtn');
+        const buttonCountEl = document.getElementById('button-count');
         const clickArea = document.getElementById('clickArea');
+        
         const buyUpgradeBtn = document.getElementById('buyUpgradeBtn');
-        const upgradeNameEl = document.getElementById('upgradeName');
+        const upgradeLevelEl = document.getElementById('upgradeLevel');
         const upgradeCostEl = document.getElementById('upgradeCost');
 
-        // Обновление экрана
-        function updateUI() {
-            coinsEl.innerText = state.coins;
-            clickPowerEl.innerText = state.clickPower;
-            
-            const currentConfig = buttonsConfig[Math.min(state.upgradeLevel, buttonsConfig.length - 1)];
-            upgradeNameEl.innerText = currentConfig.name;
-            upgradeCostEl.innerText = state.upgradeCost;
-            
-            // Заблокировать кнопку покупки, если не хватает денег
-            buyUpgradeBtn.disabled = state.coins < state.upgradeCost;
+        const buyButtonBtn = document.getElementById('buyButtonBtn');
+        const shopButtonLevelEl = document.getElementById('shopButtonLevel');
+        const buttonCostEl = document.getElementById('buttonCost');
+
+        // Отрисовка кнопок
+        function renderButtons() {
+            clickArea.innerHTML = '';
+            for (let i = 0; i < state.buttonsCount; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'tap-button';
+                btn.innerText = 'ТАПАЙ!';
+                btn.addEventListener('click', (e) => handleTap(e));
+                clickArea.appendChild(btn);
+            }
         }
 
-        // Логика клика
-        tapBtn.addEventListener('click', (e) => {
+        // Обработка тапа
+        function handleTap(e) {
             state.coins += state.clickPower;
             
-            // Вибрация в Telegram (Haptic Feedback)
             if (tg && tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
 
-            // Анимация всплывающей цифры
             showFloatingNumber(e.clientX, e.clientY, `+${state.clickPower}`);
-
             saveGame();
             updateUI();
-        });
+        }
 
-        // Создание всплывающего текста при тапе
         function showFloatingNumber(x, y, text) {
             const el = document.createElement('div');
             el.className = 'floating-text';
@@ -249,19 +284,19 @@
             }, 800);
         }
 
-        // Покупка улучшения
+        // Покупка клик-улучшения
         buyUpgradeBtn.addEventListener('click', () => {
             if (state.coins >= state.upgradeCost) {
                 state.coins -= state.upgradeCost;
-                
-                const currentConfig = buttonsConfig[Math.min(state.upgradeLevel, buttonsConfig.length - 1)];
-                state.clickPower += currentConfig.power;
-                
-                // Изменяем внешний вид кнопки при покупке
-                tapBtn.style.background = currentConfig.color;
+                state.clickPower += 1;
+                state.upgradeLevel += 1;
 
-                state.upgradeLevel++;
-                state.upgradeCost = Math.round(state.upgradeCost * 2.2);
+                // Экономика: базовое увеличение + каждые 3 улучшения дополнительно +1000 к цене
+                let nextCost = Math.round(state.upgradeCost * 1.8);
+                if (state.upgradeLevel % 3 === 0) {
+                    nextCost += 1000;
+                }
+                state.upgradeCost = nextCost;
 
                 if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
@@ -271,6 +306,45 @@
                 updateUI();
             }
         });
+
+        // Покупка новой кнопки в магазине
+        buyButtonBtn.addEventListener('click', () => {
+            if (state.coins >= state.buttonCost) {
+                state.coins -= state.buttonCost;
+                state.buttonsCount += 1;
+
+                // Цена следующей кнопки
+                let nextButtonCost = Math.round(state.buttonCost * 2.5);
+                if ((state.buttonsCount - 1) % 3 === 0) {
+                    nextButtonCost += 1000;
+                }
+                state.buttonCost = nextButtonCost;
+
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+
+                renderButtons();
+                saveGame();
+                updateUI();
+            }
+        });
+
+        function updateUI() {
+            coinsEl.innerText = state.coins;
+            clickPowerEl.innerText = state.clickPower;
+            buttonCountEl.innerText = state.buttonsCount;
+
+            // Улучшение силы клика
+            upgradeLevelEl.innerText = state.upgradeLevel;
+            upgradeCostEl.innerText = state.upgradeCost;
+            buyUpgradeBtn.disabled = state.coins < state.upgradeCost;
+
+            // Улучшение/Магазин доп. кнопок
+            shopButtonLevelEl.innerText = state.buttonsCount - 1;
+            buttonCostEl.innerText = state.buttonCost;
+            buyButtonBtn.disabled = state.coins < state.buttonCost;
+        }
 
         loadGame();
     </script>
